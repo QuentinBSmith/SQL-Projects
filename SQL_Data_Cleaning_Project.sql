@@ -3,10 +3,6 @@
 -- https://www.kaggle.com/datasets/swaptr/layoffs-2022
 
 
-
-
-
-
 SELECT * 
 FROM world_layoffs.layoffs;
 
@@ -20,11 +16,10 @@ INSERT layoffs_staging
 SELECT * FROM world_layoffs.layoffs;
 
 
--- now when we are data cleaning we usually follow a few steps
 -- 1. check for duplicates and remove any
 -- 2. standardize data and fix errors
 -- 3. Look at null values and see what 
--- 4. remove any columns and rows that are not necessary - few ways
+-- 4. remove any columns and rows that are not necessary
 
 
 
@@ -80,7 +75,6 @@ WHERE
 
 -- these are the ones we want to delete where the row number is > 1 or 2or greater essentially
 
--- now you may want to write it like this:
 WITH DELETE_CTE AS 
 (
 SELECT *
@@ -110,9 +104,6 @@ WHERE (company, location, industry, total_laid_off, percentage_laid_off, `date`,
 	SELECT company, location, industry, total_laid_off, percentage_laid_off, `date`, stage, country, funds_raised_millions, row_num
 	FROM DELETE_CTE
 ) AND row_num > 1;
-
--- one solution, which I think is a good one. Is to create a new column and add those row numbers in. Then delete where row numbers are over 2, then delete that column
--- so let's do it!!
 
 ALTER TABLE world_layoffs.layoffs_staging ADD row_num INT;
 
@@ -165,12 +156,6 @@ SELECT `company`,
 DELETE FROM world_layoffs.layoffs_staging2
 WHERE row_num >= 2;
 
-
-
-
-
-
-
 -- 2. Standardize Data
 
 SELECT * 
@@ -187,7 +172,6 @@ WHERE industry IS NULL
 OR industry = ''
 ORDER BY industry;
 
--- let's take a look at these
 SELECT *
 FROM world_layoffs.layoffs_staging2
 WHERE company LIKE 'Bally%';
@@ -196,17 +180,9 @@ SELECT *
 FROM world_layoffs.layoffs_staging2
 WHERE company LIKE 'airbnb%';
 
--- it looks like airbnb is a travel, but this one just isn't populated.
--- I'm sure it's the same for the others. What we can do is
--- write a query that if there is another row with the same company name, it will update it to the non-null industry values
--- makes it easy so if there were thousands we wouldn't have to manually check them all
-
--- we should set the blanks to nulls since those are typically easier to work with
 UPDATE world_layoffs.layoffs_staging2
 SET industry = NULL
 WHERE industry = '';
-
--- now if we check those are all null
 
 SELECT *
 FROM world_layoffs.layoffs_staging2
@@ -232,7 +208,7 @@ ORDER BY industry;
 
 -- ---------------------------------------------------
 
--- I also noticed the Crypto has multiple different variations. We need to standardize that - let's say all to Crypto
+-- I noticed the Crypto has multiple different variations. We need to standardize that - let's say all to Crypto
 SELECT DISTINCT industry
 FROM world_layoffs.layoffs_staging2
 ORDER BY industry;
@@ -247,7 +223,6 @@ FROM world_layoffs.layoffs_staging2
 ORDER BY industry;
 
 -- --------------------------------------------------
--- we also need to look at 
 
 SELECT *
 FROM world_layoffs.layoffs_staging2;
